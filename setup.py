@@ -10,6 +10,7 @@ version = '0.0.1'
 
 install_requires = [
       'redis',
+      'inotify'
 ]
 
 setup(name='jsub',
@@ -27,13 +28,13 @@ setup(name='jsub',
       setup_requires=['nose>=1.0'],
       tests_require=['nose>=1.0', 'mock'],
       test_suite="nose.collector",
-      packages=find_packages('.'),
-      package_dir={'': '.'},
+      packages=find_packages('src'),
+      package_dir={'': 'src'},
       include_package_data=True,
       zip_safe=False,
       install_requires=install_requires,
       entry_points={
-          'console_scripts': ['jsub=jsub:main']
+          'console_scripts': ['jsub=jsub:main','jsub-run=jsub.run:main','jsub-send=jsub.send:main']
       },
       message_extractors={'.': [
           ('**.py', 'python', None),
