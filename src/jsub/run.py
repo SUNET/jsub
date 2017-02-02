@@ -1,10 +1,10 @@
 """
 jsub-run [-h] [-v] [--spool <spool>] [-u|--user <user>] [-g|--group <group>] [-c|--channel <channel>]+ -- cmdline
 
-After some inital setup, jsub drops privileges and connects to Redis and
-subscribes to all the channels listed on the cmdline (defaults to 'inbox')
-Each incoming message is parsed as json (failures are logged) and written
-to an maildir folder with the same name as the channel.
+After some inital setup, jsub-run optionally drops privileges and sets starts to
+process messages in the spool maildir. Each time a message is received the ENV
+element in the json object is used to generate an environment for the cmdline
+which is executed once. Each message is removed after processing.
 """
 
 import os, pwd, grp
@@ -40,8 +40,8 @@ def main():
 
     loglevel = logging.WARN
     logfile = None
-    user = 'nobody'
-    group = 'nogroup'
+    user = None
+    group = None
     channels = []
     spool = "/var/spool/jsub"
 
@@ -75,12 +75,8 @@ def main():
     if not channels:
         channels = ['inbox']
 
-    if not os.path.exists(spool):
-        os.mkdir(spool)
-        gid = grp.getgrnam(group).gr_gid
-        uid = pwd.getpwnam(user).pw_uid
-        os.chown(spool, uid, gid)
-    drop_privileges(user,group)
+    if user and group:
+        drop_privileges(user,group)
 
     i = inotify.adapters.InotifyTree(spool,mask=inotify.constants.IN_MOVE)
     md = mailbox.Maildir(self.spool, factory=json.loads)
