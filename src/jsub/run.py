@@ -16,7 +16,8 @@ import subprocess
 import shlex
 
 __author__ = 'leifj'
-__version__ = '0.0.1'
+
+from . import __version__
 
 logging.basicConfig(level=logging.DEBUG)
 

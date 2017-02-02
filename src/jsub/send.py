@@ -1,10 +1,8 @@
 """
-jsub-run [-h] [-v] [--spool <spool>] [-u|--user <user>] [-g|--group <group>] [-c|--channel <channel>]+ -- cmdline
+jsub-send [-h] [-v] [-c|--channel <channel>]+ < json
 
-After some inital setup, jsub drops privileges and connects to Redis and
-subscribes to all the channels listed on the cmdline (defaults to 'inbox')
-Each incoming message is parsed as json (failures are logged) and written
-to an maildir folder with the same name as the channel.
+After some inital setup, jsub-send connects to Redis and sends the json 
+provided on stdin to the channel(s) listed
 """
 
 import os, pwd, grp
@@ -15,8 +13,9 @@ import getopt
 import redis
 import json
 
+from . import __version__
+
 __author__ = 'leifj'
-__version__ = '0.0.1'
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -31,8 +30,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 
                                    'hvu:g:c:S', 
-                                   ['help', 'version', 'spool=', 'channel=', 
-                                    'loglevel=', 'logfile=', 'user=', 'group='])
+                                   ['help', 'version', 'spool=', 'loglevel=', 'logfile='])
     except getopt.error, msg:
         print msg
         print __doc__
@@ -40,8 +38,6 @@ def main():
 
     loglevel = logging.WARN
     logfile = None
-    user = 'nobody'
-    group = 'nogroup'
     channels = []
 
     for o, a in opts:
@@ -57,10 +53,6 @@ def main():
                 raise ValueError('Invalid log level: %s' % a)
         elif o in '--logfile':
             logfile = a
-        elif o in ('-u','--user'):
-            user = a
-        elif o in ('-g','--group'):
-            group = a
         elif o in ('-c','--channel'):
             channels += a
  
